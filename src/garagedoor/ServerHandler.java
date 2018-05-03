@@ -73,6 +73,13 @@ class ServerHandler extends SimpleChannelInboundHandler<String> {
         } else if (e instanceof DecoderException) {
             // bad (or no) certificate
             log("invalid connection from: " + ip);
+            // ban hammer time!
+            Runtime rt = java.lang.Runtime.getRuntime();
+            try {
+                rt.exec("fail2ban-client set sshd banip " + ip);
+            } catch (IOException ex) {
+                log("Unable to ban: " + ip);
+            }
         } else if (e instanceof IOException) {
             // network connection went south
             log("connection error: " + e.getMessage());
@@ -91,10 +98,10 @@ class ServerHandler extends SimpleChannelInboundHandler<String> {
             statusTaskRunning = true;
             GarageDoor.pifaceIO.ledStatus.on();
             while (statusTaskRunning) {
-                String stateNew = GarageDoor.pifaceIO.statusRollup() + " "
-                        + GarageDoor.pifaceIO.statusDoor() + " "
-                        + GarageDoor.pifaceIO.statusBeam() + " "
-                        + GarageDoor.pifaceIO.statusArmed();
+                String stateNew = GarageDoor.pifaceIO.statusRollup() + " " +
+                                  GarageDoor.pifaceIO.statusDoor() + " " +
+                                  GarageDoor.pifaceIO.statusBeam() + " " +
+                                  GarageDoor.pifaceIO.statusArmed();
                 send("STATUS " + stateNew);
                 try {
                     // wait 20 seconds (or until we get interrupted when a status changes)

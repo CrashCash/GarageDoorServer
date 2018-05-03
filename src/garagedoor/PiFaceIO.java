@@ -18,6 +18,16 @@ import java.util.Map;
 public class PiFaceIO {
     private String fileDisarm = "/tmp/disarmed";
     private String soundCmd = "/usr/bin/play -q /usr/share/sounds/";
+    private static final String CLOSED = "CLOSED";
+    private static final String OPEN = "OPEN";
+    private static final String TRANSIT = "TRANSIT";
+    private static final String UNKNOWN = "UNKNOWN";
+
+    private static final String CLEAR = "CLEAR";
+    private static final String BLOCKED = "BLOCKED";
+
+    private static final String ARMED = "ARMED";
+    private static final String DISARMED = "DISARMED";
 
     private PiFaceDevice piface;
     private Relay relayButton;
@@ -36,19 +46,18 @@ public class PiFaceIO {
     private long last_time;
 
     // list of various sound filenames
-    private static final Map<String, String> sounds
-                                             = Collections.unmodifiableMap(
-                    new HashMap<String, String>() {
-                {
-                    put("TINK", "tink.wav");
-                    put("DING", "ding.wav");
-                    put("WHOOP_UP", "Window_DeIconify.wav");
-                    put("WHOOP_DOWN", "Window_Iconify.wav");
-                    put("D6", "Desktop6.wav");
-                    put("D7", "Desktop7.wav");
-                    put("ERROR", "defaultbeep.wav");
-                }
-            });
+    private static final Map<String, String> sounds = Collections.unmodifiableMap(
+            new HashMap<String, String>() {
+        {
+            put("tink", "tink.wav");
+            put("ding", "ding.wav");
+            put("close start", "Window_DeIconify.wav");
+            put("close done", "Window_Iconify.wav");
+            put("beam clear", "Desktop6.wav");
+            put("beam blocked", "Desktop7.wav");
+            put("error", "defaultbeep.wav");
+        }
+    });
 
     public PiFaceIO() throws Exception {
         // initialize PiFace and set up access
@@ -115,30 +124,30 @@ public class PiFaceIO {
         boolean closed = pinClosed.isLow();
         boolean open = pinOpen.isLow();
         if (!closed && !open) {
-            return "TRANSIT";
+            return TRANSIT;
         }
         if (closed && !open) {
-            return "CLOSED";
+            return CLOSED;
         }
         if (!closed && open) {
-            return "OPEN";
+            return OPEN;
         }
-        return "UNKNOWN";
+        return UNKNOWN;
     }
 
     // read back-door status
     public String statusDoor() {
-        return pinDoor.isLow() ? "CLOSED" : "OPEN";
+        return pinDoor.isLow() ? CLOSED : OPEN;
     }
 
     // read beam status
     public String statusBeam() {
-        return pinBeam.isLow() ? "BLOCKED" : "CLEAR";
+        return pinBeam.isLow() ? BLOCKED : CLEAR;
     }
 
     // read armed status
     public String statusArmed() {
-        return GarageDoor.closeTaskRunning ? "ARMED" : "DISARMED";
+        return GarageDoor.closeTaskRunning ? ARMED : DISARMED;
     }
 
     // toggle relay to "push button" on motor
@@ -172,12 +181,12 @@ public class PiFaceIO {
         @Override
         public void run() {
             log("close task run");
-            sound("WHOOP_UP");
+            sound("close start");
             GarageDoor.closeTaskRunning = true;
             GarageDoor.interruptTasks();
             ledWait.on();
             // open the door if it's closed
-            if (statusRollup().equals("CLOSED")) {
+            if (statusRollup().equals(CLOSED)) {
                 pressButton();
                 // delay so we don't instantly exit because the door is closed
                 sleepSimple(2);
@@ -189,7 +198,7 @@ public class PiFaceIO {
                     (System.currentTimeMillis() - last_time > GarageDoor.close_time) &&
                     statusBeam().equals("CLEAR")) {
                     // timeout since last beam-clear exceeded, and beam is currently clear
-                    if (statusRollup().equals("OPEN")) {
+                    if (statusRollup().equals(OPEN)) {
                         log("close task closing door");
                         pressButton();
                     } else {
@@ -197,7 +206,7 @@ public class PiFaceIO {
                     }
                     stopCloseTask();
                 }
-                if (statusRollup().equals("CLOSED")) {
+                if (statusRollup().equals(CLOSED)) {
                     // if door is closed, we're wasting time
                     log("close task exiting because door is closed");
                     stopCloseTask();
@@ -206,7 +215,7 @@ public class PiFaceIO {
             }
             ledWait.off();
             GarageDoor.interruptTasks();
-            sound("WHOOP_DOWN");
+            sound("close done");
             log("close task done");
         }
     }
@@ -220,12 +229,16 @@ public class PiFaceIO {
                 last_time = System.currentTimeMillis();
                 // log("beam clear");
                 ledBeam.off();
-                sound("D6");
+                if (GarageDoor.closeTaskRunning) {
+                    sound("beam clear");
+                }
             } else {
                 last_time = 0;
                 // log("beam blocked");
                 ledBeam.on();
-                sound("D7");
+                if (GarageDoor.closeTaskRunning) {
+                    sound("beam blocked");
+                }
             }
         }
     }
@@ -235,6 +248,11 @@ public class PiFaceIO {
         @Override
         public void handleGpioPinDigitalStateChangeEvent(GpioPinDigitalStateChangeEvent event) {
             GarageDoor.interruptTasks();
+            if (event.getState() == PinState.HIGH) {
+                log("back door opened");
+            } else if (event.getState() == PinState.LOW) {
+                log("back door closed");
+            }
         }
     }
 
@@ -245,8 +263,10 @@ public class PiFaceIO {
             GarageDoor.interruptTasks();
             if (event.getState() == PinState.HIGH) {
                 ledTransit.on();
+                log("rollup door closing");
             } else if (event.getState() == PinState.LOW) {
                 ledTransit.off();
+                log("rollup door open");
             }
         }
     }
@@ -258,8 +278,10 @@ public class PiFaceIO {
             GarageDoor.interruptTasks();
             if (event.getState() == PinState.HIGH) {
                 ledTransit.on();
+                log("rollup door opening");
             } else if (event.getState() == PinState.LOW) {
                 ledTransit.off();
+                log("rollup door closed");
             }
         }
     }
@@ -274,7 +296,7 @@ public class PiFaceIO {
                     // if we're already waiting, abort
                     log("button aborted task");
                     stopCloseTask();
-                } else if (statusRollup().equals("CLOSED")) {
+                } else if (statusRollup().equals(CLOSED)) {
                     // if door is closed, then open & wait for beam break
                     log("button starting task");
                     startCloseTask();
@@ -292,7 +314,7 @@ public class PiFaceIO {
         public void handleGpioPinDigitalStateChangeEvent(GpioPinDigitalStateChangeEvent event) {
             if (event.getState() == PinState.LOW) {
                 log("rollup door button press");
-                if (statusRollup().equals("TRANSIT")) {
+                if (statusRollup().equals(TRANSIT)) {
                     // if door is in motion, press button
                     log("button operating door");
                     pressButton();

@@ -40,6 +40,9 @@ public class GarageDoor extends ChannelInboundHandlerAdapter {
     // this is global so we only have one close task running
     public static boolean closeTaskRunning = false;
 
+    // this is global so we only have one message task running
+    public static boolean msgTaskRunning = false;
+
     // a set of all the running status tasks
     public static Set<ServerHandler.StatusTask> statusTasks = new HashSet<>();
 
@@ -115,7 +118,7 @@ public class GarageDoor extends ChannelInboundHandlerAdapter {
     public static void readConfig() {
         BufferedReader br;
         try {
-            br = new BufferedReader(new FileReader(new File("/etc/garagedoor.conf")));
+            br = new BufferedReader(new FileReader(new File("/etc/garagedoor/garagedoor.conf")));
         } catch (FileNotFoundException ex) {
             return;
         }
