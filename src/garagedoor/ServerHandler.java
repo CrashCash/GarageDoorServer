@@ -70,16 +70,11 @@ class ServerHandler extends SimpleChannelInboundHandler<String> {
         if (e instanceof NotSslRecordException) {
             // someone tried to ssh to our port
             log("invalid connection from: " + ip);
+            banhammer(ip);
         } else if (e instanceof DecoderException) {
             // bad (or no) certificate
             log("invalid connection from: " + ip);
-            // ban hammer time!
-            Runtime rt = java.lang.Runtime.getRuntime();
-            try {
-                rt.exec("fail2ban-client set sshd banip " + ip);
-            } catch (IOException ex) {
-                log("Unable to ban: " + ip);
-            }
+            banhammer(ip);
         } else if (e instanceof IOException) {
             // network connection went south
             log("connection error: " + e.getMessage());
@@ -88,6 +83,16 @@ class ServerHandler extends SimpleChannelInboundHandler<String> {
             logExcept(e);
         }
         ctx.close();
+    }
+
+    public void banhammer(String ip) {
+        Runtime rt = java.lang.Runtime.getRuntime();
+        try {
+            rt.exec("fail2ban-client set sshd banip " + ip);
+            log("Banned: " + ip);
+        } catch (IOException ex) {
+            log("Unable to ban: " + ip);
+        }
     }
 
     // periodic task to report current state of doors
