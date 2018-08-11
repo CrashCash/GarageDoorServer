@@ -2,6 +2,7 @@ package garagedoor;
 
 import static garagedoor.GarageDoor.log;
 import static garagedoor.GarageDoor.logExcept;
+import static garagedoor.GarageDoor.log_remote;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.codec.DecoderException;
@@ -69,15 +70,15 @@ class ServerHandler extends SimpleChannelInboundHandler<String> {
         String ip = addr.getAddress().getHostAddress();
         if (e instanceof NotSslRecordException) {
             // someone tried to ssh to our port
-            log("invalid connection from: " + ip);
+            log_remote("invalid connection from: " + ip);
             banhammer(ip);
         } else if (e instanceof DecoderException) {
             // bad (or no) certificate
-            log("invalid connection from: " + ip);
+            log_remote("invalid connection from: " + ip);
             banhammer(ip);
         } else if (e instanceof IOException) {
             // network connection went south
-            log("connection error: " + e.getMessage());
+            log_remote("connection error: " + e.getMessage());
         } else {
             // no clue what happened
             logExcept(e);
@@ -89,9 +90,9 @@ class ServerHandler extends SimpleChannelInboundHandler<String> {
         Runtime rt = java.lang.Runtime.getRuntime();
         try {
             rt.exec("fail2ban-client set sshd banip " + ip);
-            log("Banned: " + ip);
+            log_remote("Banned: " + ip);
         } catch (IOException ex) {
-            log("Unable to ban: " + ip);
+            log_remote("Unable to ban: " + ip);
         }
     }
 

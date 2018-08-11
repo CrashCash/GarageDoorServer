@@ -50,15 +50,25 @@ public class GarageDoor extends ChannelInboundHandlerAdapter {
     public static int close_time = 10000;
 
     // log messages cleanly
-    public static void log(String msg) {
+    public static void syslog(String msg, boolean remote) {
         Runtime rt = java.lang.Runtime.getRuntime();
         try {
             // Java is such a piece of shit that it can't log to syslog
-            rt.exec("logger --rfc3164 -n desktop.lan -t garagedoor " + msg);
+            if (remote) {
+                rt.exec("logger --rfc3164 -n desktop.lan -t garagedoor " + msg);
+            }
             rt.exec("logger -t garagedoor " + msg);
         } catch (IOException ex) {
             Logger.getLogger(GarageDoor.class.getName()).log(Level.SEVERE, null, ex);
         }
+    }
+
+    public static void log(String msg) {
+        syslog(msg, false);
+    }
+
+    public static void log_remote(String msg) {
+        syslog(msg, true);
     }
 
     // initialize things
