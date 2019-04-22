@@ -173,8 +173,7 @@ public class GarageDoor extends ChannelInboundHandlerAdapter {
         fh.setFormatter(new CustomLogFormatter());
 
         // when it dies horribly, find out why!
-        final Thread.UncaughtExceptionHandler oldHandler
-                                              = Thread.getDefaultUncaughtExceptionHandler();
+        final Thread.UncaughtExceptionHandler old = Thread.getDefaultUncaughtExceptionHandler();
         Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
             @Override
             public void uncaughtException(Thread paramThread, Throwable ex) {
