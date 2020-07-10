@@ -1,4 +1,4 @@
-package garagedoor;
+package org.gcash.garagedoor;
 
 import java.text.Format;
 import java.text.SimpleDateFormat;

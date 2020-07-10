@@ -3,7 +3,7 @@
 telnet -z ssl -z cert=~/raspberry_pi/garage_door/tls/cert-client.pem -z key=~/raspberry_pi/garage_door/tls/key-client.pem raspi 16000
 telnet -z ssl -z cert=~/raspberry_pi/garage_door/tls/cert-client.pem -z key=~/raspberry_pi/garage_door/tls/key-client.pem garagedoor 17000
  */
-package garagedoor;
+package org.gcash.garagedoor;
 
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelInboundHandlerAdapter;

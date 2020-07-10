@@ -1,4 +1,4 @@
-package garagedoor;
+package org.gcash.garagedoor;
 
 import com.pi4j.component.light.LED;
 import com.pi4j.component.relay.Relay;
@@ -8,7 +8,7 @@ import com.pi4j.io.gpio.PinState;
 import com.pi4j.io.gpio.event.GpioPinDigitalStateChangeEvent;
 import com.pi4j.io.gpio.event.GpioPinListenerDigital;
 import com.pi4j.io.spi.SpiChannel;
-import static garagedoor.GarageDoor.log;
+import static org.gcash.garagedoor.GarageDoor.log;
 import java.io.File;
 import java.util.Collections;
 import java.util.HashMap;
@@ -18,16 +18,16 @@ import java.util.Map;
 public class PiFaceIO {
     private String fileDisarm = "/tmp/disarmed";
     private String soundCmd = "/usr/bin/play -q /usr/share/sounds/";
-    private static final String CLOSED = "CLOSED";
-    private static final String OPEN = "OPEN";
-    private static final String TRANSIT = "TRANSIT";
-    private static final String UNKNOWN = "UNKNOWN";
+    public static final String CLOSED = "CLOSED";
+    public static final String OPEN = "OPEN";
+    public static final String TRANSIT = "TRANSIT";
+    public static final String UNKNOWN = "UNKNOWN";
 
-    private static final String CLEAR = "CLEAR";
-    private static final String BLOCKED = "BLOCKED";
+    public static final String CLEAR = "CLEAR";
+    public static final String BLOCKED = "BLOCKED";
 
-    private static final String ARMED = "ARMED";
-    private static final String DISARMED = "DISARMED";
+    public static final String ARMED = "ARMED";
+    public static final String DISARMED = "DISARMED";
 
     private PiFaceDevice piface;
     private Relay relayButton;

@@ -1,6 +1,6 @@
-package garagedoor;
+package org.gcash.garagedoor;
 
-import static garagedoor.GarageDoor.log;
+import static org.gcash.garagedoor.GarageDoor.log;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.SocketChannel;

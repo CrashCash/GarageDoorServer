@@ -1,8 +1,5 @@
-package garagedoor;
+package org.gcash.garagedoor;
 
-import static garagedoor.GarageDoor.log;
-import static garagedoor.GarageDoor.logExcept;
-import static garagedoor.GarageDoor.log_remote;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.codec.DecoderException;
@@ -10,6 +7,11 @@ import io.netty.handler.ssl.NotSslRecordException;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.InetSocketAddress;
+import static org.gcash.garagedoor.GarageDoor.log;
+import static org.gcash.garagedoor.GarageDoor.logExcept;
+import static org.gcash.garagedoor.GarageDoor.log_remote;
+import static org.gcash.garagedoor.PiFaceIO.CLOSED;
+import static org.gcash.garagedoor.PiFaceIO.OPEN;
 
 // handle all the protocol actions
 class ServerHandler extends SimpleChannelInboundHandler<String> {
@@ -144,7 +146,8 @@ class ServerHandler extends SimpleChannelInboundHandler<String> {
     // close door if it's open
     private void do_close() {
         log("execute close");
-        if (GarageDoor.pifaceIO.statusRollup().equals("OPEN")) {
+        GarageDoor.pifaceIO.pressButton();
+        if (GarageDoor.pifaceIO.statusRollup().equals(OPEN)) {
             GarageDoor.pifaceIO.pressButton();
         }
         send("CLOSE DONE");
@@ -153,7 +156,7 @@ class ServerHandler extends SimpleChannelInboundHandler<String> {
     // open door if it's closed
     private void do_open() {
         log("execute open");
-        if (GarageDoor.pifaceIO.statusRollup().equals("CLOSED")) {
+        if (GarageDoor.pifaceIO.statusRollup().equals(CLOSED)) {
             GarageDoor.pifaceIO.pressButton();
         }
         send("OPEN DONE");
