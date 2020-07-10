@@ -5,7 +5,7 @@ This is a NetBeans project.
 
 For the SysV init script, see GarageDoorServerInit
 
-Do a standard NetBeans remote deploy to the RaspBerry Pi.
+Do a standard NetBeans remote deploy to the Raspberry Pi.
 
 It needs two support libraries:
 * Netty from http://netty.io/ for the network server framework
@@ -13,7 +13,7 @@ It needs two support libraries:
 
 For Netty, install netty-buffer-x.x.x.Final.jar, netty-codec-x.x.x.Final.jar, netty-common-x.x.x.Final.jar, netty-handler-x.x.x.Final.jar, and netty-transport-x.x.x.Final.jar
 
-For Pi4J, install pi4j-core.jar, pi4j-device.jar, pi4j-gpio-extension.jar, and  pi4j-service.jar
+For Pi4J, install pi4j-core.jar, pi4j-device.jar, and pi4j-gpio-extension.jar
 
 Here are the steps to generate two self-signed X.509 certificates. This will generate two new RSA 2048 bit keys, generate two self signed certificates, and bundle the client certificate with the corresponding private key, and the server's public certificate in a PKCS#12 container file. These certificates will be valid for 10 years (3650 days).
 
@@ -30,10 +30,12 @@ Now you need to install the certificates into the proper places.
 
 2. Copy cert-server.pem, key-server.pem, and cert-client.pem to /etc/garagedoor on the Raspberry Pi.
 
-3. Set the proper permissions by running (as root) on the Raspberry Pi:
+3. Run "adduser garagedoor" (as root) on the Raspberry Pi to create the user that will run the code.
+
+4. Set the proper permissions by running (as root) on the Raspberry Pi:
 ```
 cd /etc/garagedoor
 chmod 600 .
 chmod 400 cert-server.pem key-server.pem cert-client.pem
-chown garagedoor:nogroup . cert-server.pem key-server.pem cert-client.pem
+chown garagedoor:garagedoor . cert-server.pem key-server.pem cert-client.pem
 ```
