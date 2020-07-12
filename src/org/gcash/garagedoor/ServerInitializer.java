@@ -1,6 +1,5 @@
 package org.gcash.garagedoor;
 
-import static org.gcash.garagedoor.GarageDoor.log;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.SocketChannel;
@@ -9,6 +8,7 @@ import io.netty.handler.codec.Delimiters;
 import io.netty.handler.codec.string.StringDecoder;
 import io.netty.handler.codec.string.StringEncoder;
 import io.netty.handler.ssl.SslContext;
+import static org.gcash.garagedoor.GarageDoor.log;
 
 // set up server to handle single-line strings
 class ServerInitializer extends ChannelInitializer<SocketChannel> {
@@ -24,7 +24,6 @@ class ServerInitializer extends ChannelInitializer<SocketChannel> {
     @Override
     protected void initChannel(SocketChannel ch) {
         log("connection from: " + ch.remoteAddress().toString().substring(1));
-
         ChannelPipeline pipeline = ch.pipeline();
         pipeline.addLast(sslCtx.newHandler(ch.alloc()));
         pipeline.addLast(new DelimiterBasedFrameDecoder(8192, Delimiters.lineDelimiter()));

@@ -47,7 +47,7 @@ public class GarageDoor extends ChannelInboundHandlerAdapter {
     public static Set<ServerHandler.StatusTask> statusTasks = new HashSet<>();
 
     // config variables
-    public static int close_time = 10000;
+    public static int close_time = 4000;
 
     // log messages cleanly
     public static void syslog(String msg, boolean remote) {
@@ -64,11 +64,11 @@ public class GarageDoor extends ChannelInboundHandlerAdapter {
     }
 
     public static void log(String msg) {
-        syslog(msg, false);
+        syslog(msg, true);
     }
 
-    public static void log_remote(String msg) {
-        syslog(msg, true);
+    public static void log_local(String msg) {
+        syslog(msg, false);
     }
 
     // initialize things

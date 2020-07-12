@@ -8,11 +8,11 @@ import com.pi4j.io.gpio.PinState;
 import com.pi4j.io.gpio.event.GpioPinDigitalStateChangeEvent;
 import com.pi4j.io.gpio.event.GpioPinListenerDigital;
 import com.pi4j.io.spi.SpiChannel;
-import static org.gcash.garagedoor.GarageDoor.log;
 import java.io.File;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import static org.gcash.garagedoor.GarageDoor.log;
 
 // all the I/O related actions
 public class PiFaceIO {
@@ -227,14 +227,14 @@ public class PiFaceIO {
             GarageDoor.interruptTasks();
             if (event.getState() == PinState.HIGH) {
                 last_time = System.currentTimeMillis();
-                // log("beam clear");
+                log("beam clear");
                 ledBeam.off();
                 if (GarageDoor.closeTaskRunning) {
                     sound("beam clear");
                 }
             } else {
                 last_time = 0;
-                // log("beam blocked");
+                log("beam blocked");
                 ledBeam.on();
                 if (GarageDoor.closeTaskRunning) {
                     sound("beam blocked");

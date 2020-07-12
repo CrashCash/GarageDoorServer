@@ -9,7 +9,7 @@ import java.lang.reflect.Method;
 import java.net.InetSocketAddress;
 import static org.gcash.garagedoor.GarageDoor.log;
 import static org.gcash.garagedoor.GarageDoor.logExcept;
-import static org.gcash.garagedoor.GarageDoor.log_remote;
+import static org.gcash.garagedoor.GarageDoor.log_local;
 import static org.gcash.garagedoor.PiFaceIO.CLOSED;
 import static org.gcash.garagedoor.PiFaceIO.OPEN;
 
@@ -72,15 +72,15 @@ class ServerHandler extends SimpleChannelInboundHandler<String> {
         String ip = addr.getAddress().getHostAddress();
         if (e instanceof NotSslRecordException) {
             // someone tried to ssh to our port
-            log_remote("invalid connection from: " + ip);
+            log("invalid connection from: " + ip);
             banhammer(ip);
         } else if (e instanceof DecoderException) {
             // bad (or no) certificate
-            log_remote("invalid connection from: " + ip);
+            log("invalid connection from: " + ip);
             banhammer(ip);
         } else if (e instanceof IOException) {
             // network connection went south
-            log_remote("connection error: " + e.getMessage());
+            log("connection error: " + e.getMessage());
         } else {
             // no clue what happened
             logExcept(e);
@@ -92,9 +92,9 @@ class ServerHandler extends SimpleChannelInboundHandler<String> {
         Runtime rt = java.lang.Runtime.getRuntime();
         try {
             rt.exec("fail2ban-client set sshd banip " + ip);
-            log_remote("Banned: " + ip);
+            log("Banned: " + ip);
         } catch (IOException ex) {
-            log_remote("Unable to ban: " + ip);
+            log("Unable to ban: " + ip);
         }
     }
 
@@ -172,6 +172,7 @@ class ServerHandler extends SimpleChannelInboundHandler<String> {
     // keep-alive
     private void do_ping() {
         // do nothing
+        log_local("ping");
     }
 
     // report current state of doors until the remote closes connection
