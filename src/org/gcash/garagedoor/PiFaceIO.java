@@ -30,7 +30,7 @@ public class PiFaceIO {
     public static final String ARMED = "ARMED";
     public static final String DISARMED = "DISARMED";
 
-    private PiFaceDevice piface;
+    public PiFaceDevice piface;
     private Relay relayButton;
     public LED ledWait;
     public LED ledStatus;

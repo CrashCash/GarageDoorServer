@@ -5,6 +5,7 @@ telnet -z ssl -z cert=~/raspberry_pi/garage_door/tls/cert-client.pem -z key=~/ra
  */
 package org.gcash.garagedoor;
 
+import com.pi4j.component.light.LED;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.EventLoopGroup;
@@ -33,7 +34,6 @@ public class GarageDoor extends ChannelInboundHandlerAdapter {
     private String keyFile = "/etc/garagedoor/key-server.pem";
     private String certFile = "/etc/garagedoor/cert-server.pem";
     private String clientCertFile = "/etc/garagedoor/cert-client.pem";
-
     private static Logger logger;
     public static PiFaceIO pifaceIO = null;
 
@@ -90,6 +90,18 @@ public class GarageDoor extends ChannelInboundHandlerAdapter {
             bootstrap.group(bossGroup, workerGroup)
                     .channel(NioServerSocketChannel.class)
                     .childHandler(new ServerInitializer(sslCtx));
+
+            // light show to indicate we're ready
+            LED[] lights = pifaceIO.piface.getLeds();
+            for (int i = 2; i < lights.length; i++) {
+                lights[i].on();
+            }
+            pifaceIO.sleepSimple(1);
+            for (int i = 2; i < lights.length; i++) {
+                lights[i].off();
+            }
+
+            // this never returns
             bootstrap.bind(port).sync().channel().closeFuture().sync();
         } finally {
             bossGroup.shutdownGracefully();
@@ -194,6 +206,7 @@ public class GarageDoor extends ChannelInboundHandlerAdapter {
         });
         try {
             pifaceIO = new PiFaceIO();
+            // this never returns
             new GarageDoor();
         } catch (Exception ex) {
             log("Exception in main:" + ex);
