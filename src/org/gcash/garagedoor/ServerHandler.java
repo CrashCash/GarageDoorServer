@@ -113,7 +113,7 @@ class ServerHandler extends SimpleChannelInboundHandler<String> {
                 send("STATUS " + stateNew);
                 try {
                     // wait 20 seconds (or until we get interrupted when a status changes)
-                    Thread.sleep(20 * 1000);
+                    Thread.sleep(10 * 1000);
                 } catch (Exception ex) {
                 }
             }

@@ -102,11 +102,19 @@ public class GarageDoor extends ChannelInboundHandlerAdapter {
 
     // fetch version from jar file timestamp
     public static String version() {
-        File f = new File(GarageDoor.class.getProtectionDomain().getCodeSource().getLocation()
-                .getPath());
+        File f = new File(GarageDoor.class.getProtectionDomain().getCodeSource().getLocation().getPath());
         Date lastModified = new Date(f.lastModified());
         SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss a");
         return formatter.format(lastModified);
+    }
+
+    // fetch PID from procfs
+    public static String pid() {
+        try {
+            return new File("/proc/self").getCanonicalFile().getName();
+        } catch (IOException ex) {
+            return null;
+        }
     }
 
     // log as much exception info as possible
@@ -172,21 +180,18 @@ public class GarageDoor extends ChannelInboundHandlerAdapter {
         logger.addHandler(fh);
         fh.setFormatter(new CustomLogFormatter());
 
-        // when it dies horribly, find out why!
-        final Thread.UncaughtExceptionHandler old = Thread.getDefaultUncaughtExceptionHandler();
-        Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
-            @Override
-            public void uncaughtException(Thread paramThread, Throwable ex) {
-                System.out.println("Uncaught Exception: " + ex);
-                Logger.getLogger(GarageDoor.class.getName()).log(Level.SEVERE, null, ex);
-                System.exit(3);
-            }
-        });
-
         // ready to go
-        log("Starting up");
+        log("Starting up: " + pid());
         readConfig();
         log("Version: " + version());
+
+        // catches SIGINT (2) and SIGTERM (15)
+        Runtime.getRuntime().addShutdownHook(new Thread() {
+            @Override
+            public void run() {
+                log("Shutdown");
+            }
+        });
         try {
             pifaceIO = new PiFaceIO();
             new GarageDoor();

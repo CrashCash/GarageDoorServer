@@ -13,6 +13,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import static org.gcash.garagedoor.GarageDoor.log;
+import static org.gcash.garagedoor.GarageDoor.log_local;
 
 // all the I/O related actions
 public class PiFaceIO {
@@ -51,6 +52,7 @@ public class PiFaceIO {
         {
             put("tink", "tink.wav");
             put("ding", "ding.wav");
+            put("bell", "bicycle_bell.wav");
             put("close start", "Window_DeIconify.wav");
             put("close done", "Window_Iconify.wav");
             put("beam clear", "Desktop6.wav");
@@ -58,6 +60,9 @@ public class PiFaceIO {
             put("error", "defaultbeep.wav");
         }
     });
+
+    // for testing
+    private boolean flagDoor = false;
 
     public PiFaceIO() throws Exception {
         // initialize PiFace and set up access
@@ -137,7 +142,9 @@ public class PiFaceIO {
 
     // read back-door status
     public String statusDoor() {
-        return pinDoor.isLow() ? CLOSED : OPEN;
+        // return pinDoor.isLow() ? CLOSED : OPEN;
+        flagDoor = !flagDoor;
+        return flagDoor ? CLOSED : OPEN;
     }
 
     // read beam status
@@ -227,14 +234,14 @@ public class PiFaceIO {
             GarageDoor.interruptTasks();
             if (event.getState() == PinState.HIGH) {
                 last_time = System.currentTimeMillis();
-                log("beam clear");
+                log_local("beam clear");
                 ledBeam.off();
                 if (GarageDoor.closeTaskRunning) {
                     sound("beam clear");
                 }
             } else {
                 last_time = 0;
-                log("beam blocked");
+                log_local("beam blocked");
                 ledBeam.on();
                 if (GarageDoor.closeTaskRunning) {
                     sound("beam blocked");
@@ -263,9 +270,11 @@ public class PiFaceIO {
             GarageDoor.interruptTasks();
             if (event.getState() == PinState.HIGH) {
                 ledTransit.on();
+                sound("bell");
                 log("rollup door closing");
             } else if (event.getState() == PinState.LOW) {
                 ledTransit.off();
+                sound("bell");
                 log("rollup door open");
             }
         }
@@ -278,55 +287,42 @@ public class PiFaceIO {
             GarageDoor.interruptTasks();
             if (event.getState() == PinState.HIGH) {
                 ledTransit.on();
+                sound("bell");
                 log("rollup door opening");
             } else if (event.getState() == PinState.LOW) {
                 ledTransit.off();
+                sound("bell");
                 log("rollup door closed");
             }
         }
     }
 
-    // handle button press events for button near back door
+    // handle button press events for button #1
     public class btn0Listener implements GpioPinListenerDigital {
         @Override
         public void handleGpioPinDigitalStateChangeEvent(GpioPinDigitalStateChangeEvent event) {
             if (event.getState() == PinState.LOW) {
-                log("back door button press");
+                log("button 1 press");
                 if (GarageDoor.closeTaskRunning) {
                     // if we're already waiting, abort
-                    log("button aborted task");
+                    log("button 1 aborted task");
                     stopCloseTask();
-                } else if (statusRollup().equals(CLOSED)) {
-                    // if door is closed, then open & wait for beam break
-                    log("button starting task");
-                    startCloseTask();
                 } else {
-                    log("button operating door");
-                    pressButton();
+                    // if door is closed, then open & wait for beam break
+                    log("button 1 starting task");
+                    startCloseTask();
                 }
             }
         }
     }
 
-    // handle button press events for button near rollup door
+    // handle button press events for button #2
     public class btn1Listener implements GpioPinListenerDigital {
         @Override
         public void handleGpioPinDigitalStateChangeEvent(GpioPinDigitalStateChangeEvent event) {
             if (event.getState() == PinState.LOW) {
-                log("rollup door button press");
-                if (statusRollup().equals(TRANSIT)) {
-                    // if door is in motion, press button
-                    log("button operating door");
-                    pressButton();
-                } else if (GarageDoor.closeTaskRunning) {
-                    // if we're already waiting, abort
-                    log("button aborted task");
-                    stopCloseTask();
-                } else {
-                    // open & wait for beam break
-                    log("button starting task");
-                    startCloseTask();
-                }
+                log("button 2 press");
+                pressButton();
             }
         }
     }
