@@ -73,11 +73,11 @@ class ServerHandler extends SimpleChannelInboundHandler<String> {
         if (e instanceof NotSslRecordException) {
             // someone tried to ssh to our port
             log("invalid connection from: " + ip);
-            banhammer(ip);
+            banHammer(ip);
         } else if (e instanceof DecoderException) {
             // bad (or no) certificate
             log("invalid connection from: " + ip);
-            banhammer(ip);
+            banHammer(ip);
         } else if (e instanceof IOException) {
             // network connection went south
             log("connection error: " + e.getMessage());
@@ -88,7 +88,7 @@ class ServerHandler extends SimpleChannelInboundHandler<String> {
         ctx.close();
     }
 
-    public void banhammer(String ip) {
+    public void banHammer(String ip) {
         Runtime rt = java.lang.Runtime.getRuntime();
         try {
             rt.exec("fail2ban-client set sshd banip " + ip);

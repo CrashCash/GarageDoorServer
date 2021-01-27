@@ -9,6 +9,7 @@ import com.pi4j.io.gpio.event.GpioPinDigitalStateChangeEvent;
 import com.pi4j.io.gpio.event.GpioPinListenerDigital;
 import com.pi4j.io.spi.SpiChannel;
 import java.io.File;
+import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -45,6 +46,8 @@ public class PiFaceIO {
     private GpioPinDigitalInput pinBtn1;
 
     private long last_time;
+
+    WatchdogTask watchdog;
 
     // list of various sound filenames
     private static final Map<String, String> sounds = Collections.unmodifiableMap(
@@ -227,6 +230,28 @@ public class PiFaceIO {
         }
     }
 
+    // send email after door is open for extended period of time
+    class WatchdogTask extends Thread {
+        @Override
+        public void run() {
+            while (true) {
+                sleepSimple(60 * 60);
+                if (statusRollup().equals(CLOSED)) {
+                    break;
+                }
+
+                // send email
+                try {
+                    String[] command = {"/bin/bash", "-c", "echo \"Garage door is open\" | /usr/bin/mail -s \"Garage door is open\" genecash@fastmail.com"};
+                    Runtime.getRuntime().exec(command);
+                    log("door is open - sent email");
+                } catch (IOException ex) {
+                    log("door is open - could not send email");
+                }
+            }
+        }
+    }
+
     // handle photoelectric eye events
     public class beamListener implements GpioPinListenerDigital {
         @Override
@@ -276,6 +301,8 @@ public class PiFaceIO {
                 ledTransit.off();
                 sound("bell");
                 log("rollup door open");
+                watchdog = new WatchdogTask();
+                watchdog.start();
             }
         }
     }
@@ -293,6 +320,7 @@ public class PiFaceIO {
                 ledTransit.off();
                 sound("bell");
                 log("rollup door closed");
+                watchdog.interrupt();
             }
         }
     }

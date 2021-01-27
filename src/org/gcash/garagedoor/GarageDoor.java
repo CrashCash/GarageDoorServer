@@ -92,6 +92,7 @@ public class GarageDoor extends ChannelInboundHandlerAdapter {
                     .childHandler(new ServerInitializer(sslCtx));
 
             // light show to indicate we're ready
+            // note that LEDs 0 & 1 are connected to the relays
             LED[] lights = pifaceIO.piface.getLeds();
             for (int i = 2; i < lights.length; i++) {
                 lights[i].on();
