@@ -43,6 +43,9 @@ public class GarageDoor extends ChannelInboundHandlerAdapter {
     // this is global so we only have one message task running
     public static boolean msgTaskRunning = false;
 
+    // debounce sensors
+    public static boolean doorSemaphore = false;
+
     // a set of all the running status tasks
     public static Set<ServerHandler.StatusTask> statusTasks = new HashSet<>();
 
@@ -140,7 +143,7 @@ public class GarageDoor extends ChannelInboundHandlerAdapter {
     }
 
     // interrupt all the running status tasks so they update
-    public static void interruptTasks() {
+    public static void statusTasks() {
         for (ServerHandler.StatusTask task : statusTasks) {
             task.interrupt();
         }

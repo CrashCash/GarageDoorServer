@@ -193,7 +193,7 @@ public class PiFaceIO {
             log("close task run");
             sound("close start");
             GarageDoor.closeTaskRunning = true;
-            GarageDoor.interruptTasks();
+            GarageDoor.statusTasks();
             ledWait.on();
             // open the door if it's closed
             if (statusRollup().equals(CLOSED)) {
@@ -224,7 +224,7 @@ public class PiFaceIO {
                 sleepSimple(0.1);
             }
             ledWait.off();
-            GarageDoor.interruptTasks();
+            GarageDoor.statusTasks();
             sound("close done");
             log("close task done");
         }
@@ -256,7 +256,7 @@ public class PiFaceIO {
     public class beamListener implements GpioPinListenerDigital {
         @Override
         public void handleGpioPinDigitalStateChangeEvent(GpioPinDigitalStateChangeEvent event) {
-            GarageDoor.interruptTasks();
+            GarageDoor.statusTasks();
             if (event.getState() == PinState.HIGH) {
                 last_time = System.currentTimeMillis();
                 log_local("beam clear");
@@ -279,7 +279,7 @@ public class PiFaceIO {
     public class doorListener implements GpioPinListenerDigital {
         @Override
         public void handleGpioPinDigitalStateChangeEvent(GpioPinDigitalStateChangeEvent event) {
-            GarageDoor.interruptTasks();
+            GarageDoor.statusTasks();
             if (event.getState() == PinState.HIGH) {
                 log("back door opened");
             } else if (event.getState() == PinState.LOW) {
@@ -292,7 +292,11 @@ public class PiFaceIO {
     public class openListener implements GpioPinListenerDigital {
         @Override
         public void handleGpioPinDigitalStateChangeEvent(GpioPinDigitalStateChangeEvent event) {
-            GarageDoor.interruptTasks();
+            if (GarageDoor.doorSemaphore) {
+                return;
+            }
+            GarageDoor.doorSemaphore = true;
+            GarageDoor.statusTasks();
             if (event.getState() == PinState.HIGH) {
                 ledTransit.on();
                 sound("bell");
@@ -304,6 +308,8 @@ public class PiFaceIO {
                 watchdog = new WatchdogTask();
                 watchdog.start();
             }
+            sleepSimple(0.5);
+            GarageDoor.doorSemaphore = false;
         }
     }
 
@@ -311,7 +317,11 @@ public class PiFaceIO {
     public class closeListener implements GpioPinListenerDigital {
         @Override
         public void handleGpioPinDigitalStateChangeEvent(GpioPinDigitalStateChangeEvent event) {
-            GarageDoor.interruptTasks();
+            if (GarageDoor.doorSemaphore) {
+                return;
+            }
+            GarageDoor.doorSemaphore = true;
+            GarageDoor.statusTasks();
             if (event.getState() == PinState.HIGH) {
                 ledTransit.on();
                 sound("bell");
@@ -322,6 +332,8 @@ public class PiFaceIO {
                 log("rollup door closed");
                 watchdog.interrupt();
             }
+            sleepSimple(0.5);
+            GarageDoor.doorSemaphore = false;
         }
     }
 
