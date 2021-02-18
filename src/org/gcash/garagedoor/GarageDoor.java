@@ -28,6 +28,8 @@ import java.util.Set;
 import java.util.logging.FileHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import sun.misc.Signal;
+import sun.misc.SignalHandler;
 
 public class GarageDoor extends ChannelInboundHandlerAdapter {
     private int port = 17000;
@@ -42,9 +44,6 @@ public class GarageDoor extends ChannelInboundHandlerAdapter {
 
     // this is global so we only have one message task running
     public static boolean msgTaskRunning = false;
-
-    // debounce sensors
-    public static boolean doorSemaphore = false;
 
     // a set of all the running status tasks
     public static Set<ServerHandler.StatusTask> statusTasks = new HashSet<>();
@@ -100,7 +99,7 @@ public class GarageDoor extends ChannelInboundHandlerAdapter {
             for (int i = 2; i < lights.length; i++) {
                 lights[i].on();
             }
-            pifaceIO.sleepSimple(1);
+            PiFaceIO.sleepSimple(1);
             for (int i = 2; i < lights.length; i++) {
                 lights[i].off();
             }
@@ -154,6 +153,7 @@ public class GarageDoor extends ChannelInboundHandlerAdapter {
         try {
             br = new BufferedReader(new FileReader(new File("/etc/garagedoor/garagedoor.conf")));
         } catch (FileNotFoundException ex) {
+            log("Config file not found");
             return;
         }
 
@@ -168,14 +168,23 @@ public class GarageDoor extends ChannelInboundHandlerAdapter {
                     if (split[0].equals("close time")) {
                         // guard time to close door
                         close_time = Integer.parseInt(split[1].trim());
-                        log("close time set to: " + close_time);
                     } else {
                         log("Unknown config item: \"" + split[0] + "\"");
                     }
                 } catch (NumberFormatException ex) {
                     log("readConfig number format exception in \"" + split[0] + "\": " + ex);
                 }
+
             }
+
+            // re-read config file on SIGHUP
+            Signal.handle(new Signal("HUP"), new SignalHandler() {
+                @Override
+                public void handle(Signal signal) {
+                    log("Rereading config file");
+                    readConfig();
+                }
+            });
         } catch (IOException ex) {
             log("readConfig exception: " + ex);
         }

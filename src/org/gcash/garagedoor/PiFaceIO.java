@@ -49,6 +49,9 @@ public class PiFaceIO {
 
     WatchdogTask watchdog;
 
+    // debounce sensors
+    boolean doorSemaphore = false;
+
     // list of various sound filenames
     private static final Map<String, String> sounds = Collections.unmodifiableMap(
             new HashMap<String, String>() {
@@ -105,7 +108,7 @@ public class PiFaceIO {
     }
 
     // don't get dicked over by sleep stupidity
-    public void sleepSimple(double seconds) {
+    public static void sleepSimple(double seconds) {
         try {
             Thread.sleep((long) (seconds * 1000));
         } catch (Exception ex) {
@@ -292,10 +295,10 @@ public class PiFaceIO {
     public class openListener implements GpioPinListenerDigital {
         @Override
         public void handleGpioPinDigitalStateChangeEvent(GpioPinDigitalStateChangeEvent event) {
-            if (GarageDoor.doorSemaphore) {
+            if (doorSemaphore) {
                 return;
             }
-            GarageDoor.doorSemaphore = true;
+            doorSemaphore = true;
             GarageDoor.statusTasks();
             if (event.getState() == PinState.HIGH) {
                 ledTransit.on();
@@ -308,8 +311,8 @@ public class PiFaceIO {
                 watchdog = new WatchdogTask();
                 watchdog.start();
             }
-            sleepSimple(0.5);
-            GarageDoor.doorSemaphore = false;
+            sleepSimple(2);
+            doorSemaphore = false;
         }
     }
 
@@ -317,10 +320,10 @@ public class PiFaceIO {
     public class closeListener implements GpioPinListenerDigital {
         @Override
         public void handleGpioPinDigitalStateChangeEvent(GpioPinDigitalStateChangeEvent event) {
-            if (GarageDoor.doorSemaphore) {
+            if (doorSemaphore) {
                 return;
             }
-            GarageDoor.doorSemaphore = true;
+            doorSemaphore = true;
             GarageDoor.statusTasks();
             if (event.getState() == PinState.HIGH) {
                 ledTransit.on();
@@ -332,8 +335,8 @@ public class PiFaceIO {
                 log("rollup door closed");
                 watchdog.interrupt();
             }
-            sleepSimple(0.5);
-            GarageDoor.doorSemaphore = false;
+            sleepSimple(2);
+            doorSemaphore = false;
         }
     }
 

@@ -111,11 +111,8 @@ class ServerHandler extends SimpleChannelInboundHandler<String> {
                                   GarageDoor.pifaceIO.statusBeam() + " " +
                                   GarageDoor.pifaceIO.statusArmed();
                 send("STATUS " + stateNew);
-                try {
-                    // wait 20 seconds (or until we get interrupted when a status changes)
-                    Thread.sleep(10 * 1000);
-                } catch (Exception ex) {
-                }
+                // wait 20 seconds (or until we get interrupted when a status changes)
+                PiFaceIO.sleepSimple(20);
             }
             GarageDoor.pifaceIO.ledStatus.off();
             GarageDoor.statusTasks.remove(statusTask);
