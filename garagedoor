@@ -21,7 +21,7 @@ PIDFILE="/var/run/$NAME.pid"
 d_start() {
     pgrep -f GarageDoor.jar &> /dev/null
     if [ "$?" -ne 0 ]; then
-        cd /root/GarageDoor/dist
+        cd /usr/local/bin
         java -jar GarageDoor.jar &>> /var/log/garagedoor.out &
         echo $! > $PIDFILE
     else
