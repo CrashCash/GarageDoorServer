@@ -63,10 +63,10 @@ public class Main {
         try {
             // Java is such a piece of shit that it can't log to syslog
             if (remote) {
-                rt.exec("logger --rfc3164 -n desktop.lan -t garagedoor " + msg);
+                rt.exec("logger --rfc3164 -n desktop.lan -t garagedoor " + msg).waitFor();
             }
-            rt.exec("logger -t garagedoor " + msg);
-        } catch (IOException ex) {
+            rt.exec("logger -t garagedoor " + msg).waitFor();
+        } catch (Exception ex) {
             Logger.getLogger(GarageDoor.class.getName()).log(Level.SEVERE, null, ex);
         }
     }

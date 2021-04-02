@@ -66,6 +66,27 @@
             </execution>
           </executions>
         </plugin>
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>exec-maven-plugin</artifactId>
+          <version>1.1.1</version>
+          <executions>
+            <execution>
+              <id>copy to Raspberry Pi</id>
+              <phase>install</phase>
+              <goals>
+                <goal>exec</goal>
+              </goals>
+            </execution>
+          </executions>
+          <configuration>
+            <executable>scp</executable>
+            <arguments>
+              <argument>target/GarageDoor.jar</argument>
+              <argument>garagedoor:/usr/local/bin/</argument>
+            </arguments>
+          </configuration>
+        </plugin>
       </plugins>
     </build>
 </project>

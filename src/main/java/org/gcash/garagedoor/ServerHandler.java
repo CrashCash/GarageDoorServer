@@ -91,10 +91,10 @@ class ServerHandler extends SimpleChannelInboundHandler<String> {
     public void banHammer(String ip) {
         Runtime rt = java.lang.Runtime.getRuntime();
         try {
-            rt.exec("fail2ban-client set sshd banip " + ip);
+            rt.exec("fail2ban-client set sshd banip " + ip).waitFor();
             log("Banned: " + ip);
-        } catch (IOException ex) {
-            log("Unable to ban: " + ip);
+        } catch (Exception ex) {
+            log("Unable to ban: " + ip + " because " + ex.getMessage());
         }
     }
 
@@ -143,8 +143,7 @@ class ServerHandler extends SimpleChannelInboundHandler<String> {
     // close door if it's open
     private void do_close() {
         log("Execute close");
-        GarageDoor.pifaceIO.pressButton();
-        if (GarageDoor.pifaceIO.statusRollup().equals(OPEN)) {
+        if (!GarageDoor.pifaceIO.statusRollup().equals(CLOSED)) {
             GarageDoor.pifaceIO.pressButton();
         }
         send("CLOSE DONE");
@@ -153,7 +152,7 @@ class ServerHandler extends SimpleChannelInboundHandler<String> {
     // open door if it's closed
     private void do_open() {
         log("Execute open");
-        if (GarageDoor.pifaceIO.statusRollup().equals(CLOSED)) {
+        if (!GarageDoor.pifaceIO.statusRollup().equals(OPEN)) {
             GarageDoor.pifaceIO.pressButton();
         }
         send("OPEN DONE");

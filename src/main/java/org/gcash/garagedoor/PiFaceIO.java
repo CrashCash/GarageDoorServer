@@ -9,7 +9,6 @@ import com.pi4j.io.gpio.event.GpioPinDigitalStateChangeEvent;
 import com.pi4j.io.gpio.event.GpioPinListenerDigital;
 import com.pi4j.io.spi.SpiChannel;
 import java.io.File;
-import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -245,11 +244,11 @@ public class PiFaceIO {
 
                 // send email
                 try {
-                    String[] command = {"/bin/bash", "-c", "echo \"Garage door is open\" | /usr/bin/mail -s \"Garage door is open\" genecash@fastmail.com"};
-                    Runtime.getRuntime().exec(command);
+                    String cmd = "echo \"Garage door is open\" | /usr/bin/mail -s \"Garage door is open\" genecash@fastmail.com";
+                    Runtime.getRuntime().exec(cmd).waitFor();
                     log("Door is open - sent email");
-                } catch (IOException ex) {
-                    log("Door is open - could not send email");
+                } catch (Exception ex) {
+                    log("Door is open - could not send email: " + ex.getMessage());
                 }
             }
         }
