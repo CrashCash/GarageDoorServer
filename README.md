@@ -41,11 +41,9 @@ chown garagedoor:garagedoor . cert-server.pem key-server.pem cert-client.pem
 ```
 
 ### Set up remote logging:
-* On both machines: Install the Debian rsyslog-relp package with ```apt install rsyslog-relp``
+* On both machines, install the Debian rsyslog-relp package with ```apt install rsyslog-relp```
 
-* On the Raspberry Pi
-
-  Add a file in /etc/syslog.d containing:
+* On the Raspberry Pi, add a file in /etc/syslog.d containing:
 
 ```
 module(load="omrelp")   # provides reliable remote logging support
@@ -56,9 +54,7 @@ local0.* :omrelp:desktop.lan:2514
 
   where "desktop.lan" is the name of the server machine.
 
-* On the server:
-
-  Add a file in /etc/syslog.d containing:
+* On the server, add a file in /etc/syslog.d containing:
 
 ```
 module(load="imrelp")   # provides reliable remote logging support
@@ -66,3 +62,5 @@ module(load="imrelp")   # provides reliable remote logging support
 
 input(type="imrelp" port="2514" maxDataSize="10k")
 ```
+
+* On both machines, restart the rsyslog daemon with ```service rsyslog restart```
