@@ -23,12 +23,12 @@ class ServerInitializer extends ChannelInitializer<SocketChannel> {
 
     @Override
     protected void initChannel(SocketChannel ch) {
-        log("Connection from: " + ch.remoteAddress().toString().substring(1));
         ChannelPipeline pipeline = ch.pipeline();
         pipeline.addLast(sslCtx.newHandler(ch.alloc()));
         pipeline.addLast(new DelimiterBasedFrameDecoder(8192, Delimiters.lineDelimiter()));
         pipeline.addLast(DECODER);
         pipeline.addLast(ENCODER);
         pipeline.addLast(new ServerHandler());
+        log("Connection from: " + ch.remoteAddress().toString().substring(1));
     }
 }

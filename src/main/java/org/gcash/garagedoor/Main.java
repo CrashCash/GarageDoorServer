@@ -63,9 +63,11 @@ public class Main {
         try {
             // Java is such a piece of shit that it can't log to syslog
             if (remote) {
-                rt.exec("logger --tcp --port 514 --server desktop.lan --rfc3164 --tag garagedoor " + msg).waitFor();
+                // configure rsyslogd to log this remotely
+                rt.exec("logger --priority local0.info --tag garagedoor " + msg).waitFor();
+            } else {
+                rt.exec("logger -tag garagedoor " + msg).waitFor();
             }
-            rt.exec("logger -t garagedoor " + msg).waitFor();
         } catch (Exception ex) {
             Logger.getLogger(GarageDoor.class.getName()).log(Level.SEVERE, null, ex);
         }
