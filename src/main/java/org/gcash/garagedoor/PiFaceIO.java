@@ -244,8 +244,7 @@ public class PiFaceIO {
 
                 // send email
                 try {
-                    String cmd = "echo \"Garage door is open\" | /usr/bin/mail -s \"Garage door is open\" genecash@fastmail.com";
-                    Runtime.getRuntime().exec(cmd).waitFor();
+                    Runtime.getRuntime().exec("/usr/local/bin/mail_open_door").waitFor();
                     log("Door is open - sent email");
                 } catch (Exception ex) {
                     log("Door is open - could not send email: " + ex.getMessage());

@@ -28,14 +28,39 @@ Now you need to install the certificates into the proper places.
 
 1. Copy client.p12 to the sdcard directory on your phone, and use the setup app "Fetch Certificate" button to move it to protected storage.
 
-2. Copy cert-server.pem, key-server.pem, and cert-client.pem to /etc/garagedoor on the Raspberry Pi.
+1. Copy cert-server.pem, key-server.pem, and cert-client.pem to /etc/garagedoor on the Raspberry Pi.
 
-3. Run "adduser garagedoor" (as root) on the Raspberry Pi to create the user that will run the code.
+1. Run "adduser garagedoor" (as root) on the Raspberry Pi to create the user that will run the code.
 
-4. Set the proper permissions by running (as root) on the Raspberry Pi:
+1. Set the proper permissions by running (as root) on the Raspberry Pi:
 ```
 cd /etc/garagedoor
 chmod 600 .
 chmod 400 cert-server.pem key-server.pem cert-client.pem
 chown garagedoor:garagedoor . cert-server.pem key-server.pem cert-client.pem
 ```
+
+### Set up remote logging:
+* On both machines: Install the Debian rsyslog-relp package with ''''apt install rsyslog-relp```
+
+* On the Raspberry Pi
+
+  Add a file in /etc/syslog.d containing:
+
+  ''''
+  module(load="omrelp")   # provides reliable remote logging support
+                        # need to install the Debian rsyslog-relp package
+
+  local0.* :omrelp:desktop.lan:2514
+  ''''
+
+* On the server:
+
+  Add a file in /etc/syslog.d containing:
+
+  ''''
+  module(load="imrelp")   # provides reliable remote logging support
+                        # need to install the Debian rsyslog-relp package
+
+  input(type="imrelp" port="2514" maxDataSize="10k")
+  ''''
