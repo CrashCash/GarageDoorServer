@@ -123,18 +123,21 @@ public class Main {
                     continue;
                 }
                 String[] split = line.toLowerCase().split(":", 2);
+                String option = split[0].trim();
                 try {
-                    if (split[0].trim().equals("close time")) {
-                        // guard time to close door
+                    if (option.equals("close time")) {
+                        float param = Float.parseFloat(split[1].trim());
+                        GarageDoor.close_time = (int) (param * 1000);
+                    } else if (option.equals("port")) {
+                        // network port
                         int param = Integer.parseInt(split[1].trim());
-                        GarageDoor.close_time = param * 1000;
+                        GarageDoor.port = param;
                     } else {
-                        log("Unknown config item: \"" + split[0] + "\"");
+                        log("Unknown config item: \"" + option + "\"");
                     }
                 } catch (NumberFormatException ex) {
-                    log("readConfig number format exception in \"" + split[0] + "\": " + ex);
+                    log("readConfig exception in \"" + option + "\": " + ex);
                 }
-
             }
 
             // re-read config file on SIGHUP

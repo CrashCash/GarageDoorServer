@@ -20,7 +20,6 @@ import java.util.Set;
 import static org.gcash.garagedoor.Main.log;
 
 public class GarageDoor extends ChannelInboundHandlerAdapter {
-    private int port = 17000;
     private String keyFile = "/etc/garagedoor/key-server.pem";
     private String certFile = "/etc/garagedoor/cert-server.pem";
     private String clientCertFile = "/etc/garagedoor/cert-client.pem";
@@ -37,6 +36,7 @@ public class GarageDoor extends ChannelInboundHandlerAdapter {
 
     // config variables
     public static int close_time = 4000;
+    public static int port = 17000;
 
     // initialize things
     public GarageDoor() throws Exception {
