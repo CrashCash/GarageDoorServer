@@ -1,0 +1,72 @@
+#!/bin/bash
+
+### BEGIN INIT INFO
+# Provides:          garagedoor
+# Required-Start:    $remote_fs $syslog $network
+# Required-Stop:     $remote_fs $syslog $network
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Garage door service daemon
+### END INIT INFO
+
+# Author: Gene Cash <gene.cash@gmail.com>
+
+DESC="Garage door service daemon"
+NAME="garagedoor"
+SCRIPTNAME=/etc/init.d/$NAME
+PIDFILE="/var/run/$NAME.pid"
+
+. /lib/lsb/init-functions
+
+d_start() {
+    pgrep -f GarageDoor.jar &> /dev/null
+    if [ "$?" -ne 0 ]; then
+        cd /usr/local/bin
+        java -jar GarageDoor.jar &>> /var/log/garagedoor.out &
+        echo $! > $PIDFILE
+    else
+        exit 1
+    fi
+}
+
+d_stop() {
+    PID=`pgrep -f GarageDoor.jar`
+    if [ -n "$PID" ]; then
+        kill $PID
+        while pgrep -f GarageDoor.jar &> /dev/null ; do
+            sleep 0.5
+        done
+    fi
+}
+
+d_status() {
+    pgrep -c -F $PIDFILE &> /dev/null && { echo "$DESC is running"; exit 0; } || { echo "$DESC is not running"; exit 3; }
+}
+
+case "$1" in
+    start)
+        log_daemon_msg "Starting $DESC" "$NAME"
+        d_start
+        log_end_msg $?
+        ;;
+    stop)
+        log_daemon_msg "Stopping $DESC" "$NAME"
+        d_stop
+        log_end_msg $?
+        ;;
+    restart)
+        log_daemon_msg "Restarting $DESC" "$NAME"
+        d_stop
+        d_start
+        log_end_msg $?
+        ;;
+    status)
+        d_status
+        ;;
+    *)
+        echo "Usage: $SCRIPTNAME {start|stop|restart|status}" >&2
+        exit 3
+        ;;
+esac
+
+exit 0
