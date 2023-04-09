@@ -1,5 +1,0 @@
-target/classes/
-target/archive-tmp
-target/maven-archiver
-target/maven-status/
-*.class
